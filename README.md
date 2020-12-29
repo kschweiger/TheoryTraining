@@ -1,1 +1,1 @@
-# TheoryTraining
+# Theory Training
