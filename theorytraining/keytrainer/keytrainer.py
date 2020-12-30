@@ -5,8 +5,8 @@ import logging
 import itertools
 import random
 
-from PySide6.QtWidgets import QWidget, QApplication, QPushButton, QVBoxLayout, QLineEdit, QLabel, QComboBox
-from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QWidget, QApplication, QPushButton, QVBoxLayout, QGridLayout, QLineEdit, QLabel, QComboBox
+from PySide6.QtCore import QTimer, Qt
 
 class KeyTrainer(QWidget):
 
@@ -32,11 +32,9 @@ class KeyTrainer(QWidget):
         
         self.keys = ["C","C#/Db","D","D#/Eb","E","F","F#/Gb","G","G#/Ab","A","A#/Bb","B"]
         self.theseKeys = self.keys
-        self.set_order(0)
-        self.set_start_key("C")
         
         self.isRunning = False
-        
+
         self.bpm_dialog = QLineEdit("100")
         self.signature_upper_dialog = QLineEdit("4")
         self.count_in_dialog = QLineEdit("1")
@@ -53,10 +51,12 @@ class KeyTrainer(QWidget):
         
         self.button_start = QPushButton("Start")
         self.button_start.clicked.connect(self.start)
+        self.button_start.setObjectName('StartButton')
         self.button_start.setEnabled(True)
         
         self.button_stop = QPushButton("Stop")
         self.button_stop.clicked.connect(self.stop)
+        self.button_stop.setObjectName('StopButton')
         self.button_stop.setEnabled(False)
         
         self.order_type_dropdown = QComboBox()
@@ -71,8 +71,19 @@ class KeyTrainer(QWidget):
         self.timer.timeout.connect(self.update)
         
         self.current_key = QLabel(self.current_key_text)
+        self.current_key.setObjectName('CurrentKey')
+
         self.current_sig_step_label = QLabel(self.current_sig_step)
+        self.current_sig_step_label.setObjectName('Signature')
+        #self.init_basic_layout()
+
+        self.set_order(0)
+        self.set_start_key("C")
+
         
+        self.init_grid_layout()
+        
+    def init_basic_layout(self):
         content_layout = QVBoxLayout()
         
         content_layout.addWidget(self.bpm_dialog)
@@ -94,8 +105,64 @@ class KeyTrainer(QWidget):
         content_layout.addWidget(self.button_stop)        
         
         self.setLayout(content_layout)
+
+    def init_grid_layout(self):
+        self.setStyleSheet(
+            """
+            QLabel#CurrentKey { font-size: 80px }
+            QLabel#Signature  { font-size: 50px }
+            QPushButton#StartButton { font-size: 20px }
+            QPushButton#StopButton { font-size: 20px }
+            """
+        )
+
+        grid_layout = QGridLayout()
+
+        self.bpm_label = QLabel('BPM')
+        self.signature_label = QLabel('Time signature')
+        self.count_in_label = QLabel('Bars count in')
+
+        self.order_type_label = QLabel('Key order')
+        self.start_key_label = QLabel('Starting Key')
         
-         
+        #########################################################
+        grid_layout.addWidget(self.bpm_label, 1, 0)
+        grid_layout.addWidget(self.signature_label, 1, 2)
+        grid_layout.addWidget(self.count_in_label, 1, 4)
+        
+        #########################################################
+        grid_layout.addWidget(self.bpm_dialog, 2, 0)
+        grid_layout.addWidget(self.button_set_bpm, 2, 1)
+
+        grid_layout.addWidget(self.signature_upper_dialog, 2, 2)
+        grid_layout.addWidget(self.button_set_signature, 2, 3)
+
+        grid_layout.addWidget(self.count_in_dialog, 2, 4)
+        grid_layout.addWidget(self.button_count_in_bars, 2, 5)
+
+        #########################################################
+        grid_layout.addWidget(self.order_type_label, 3, 0)
+        grid_layout.addWidget(self.start_key_label, 3, 3)
+
+        #########################################################
+        grid_layout.addWidget(self.order_type_dropdown, 4, 0)
+        grid_layout.addWidget(self.start_key_dropdown, 4, 3)
+
+        #########################################################
+        grid_layout.addWidget(self.current_key,
+                              5, 0, 1, 3,
+                              alignment=Qt.AlignCenter)
+        grid_layout.addWidget(self.current_sig_step_label,
+                              5, 3, 1, 3,
+                              alignment=Qt.AlignCenter)
+        
+        #########################################################
+        grid_layout.addWidget(self.button_start, 6, 0, 1, 3)
+        grid_layout.addWidget(self.button_stop, 6, 3, 1, 3)        
+        
+        #grid_layout.addWidget()
+        self.setLayout(grid_layout)
+        
     def setTempo(self):
         """
         Sets the bpm.
@@ -135,7 +202,9 @@ class KeyTrainer(QWidget):
             logging.debug("Setting random order")
             random.shuffle(self.theseKeys)
         logging.debug("Set of keys: %s", self.theseKeys)
-
+        
+        self.set_start_key(self.start_key_dropdown.currentText())
+        
     def set_start_key(self, startKey):
         """
         Set the starting key of the loop
