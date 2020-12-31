@@ -23,6 +23,7 @@ class KeyTrainer(QWidget):
         self.bars_count_in = 1
 
         self.countedIn = False
+        self.is_paused = False
         
         self.step = 0
 
@@ -76,6 +77,12 @@ class KeyTrainer(QWidget):
         self.button_stop.clicked.connect(self.stop)
         self.button_stop.setObjectName('StopButton')
         self.button_stop.setEnabled(False)
+
+        self.button_pause = QPushButton("Pause")
+        self.button_pause.clicked.connect(self.pause)
+        self.button_pause.setObjectName('StopButton')
+        self.button_pause.setEnabled(False)
+
         
         self.order_type_dropdown = QComboBox()
         self.order_type_dropdown.addItems(["Circle of 4th","Circle of 5th", "Random"])
@@ -158,8 +165,9 @@ class KeyTrainer(QWidget):
                               alignment=Qt.AlignCenter)
         
         #########################################################
-        grid_layout.addWidget(self.button_start, 6, 0, 1, 3)
-        grid_layout.addWidget(self.button_stop, 6, 3, 1, 3)        
+        grid_layout.addWidget(self.button_start, 6, 0, 1, 2)
+        grid_layout.addWidget(self.button_pause, 6, 2, 1, 2)
+        grid_layout.addWidget(self.button_stop, 6, 4, 1, 2)        
         
         #grid_layout.addWidget()
         self.setLayout(grid_layout)
@@ -251,16 +259,30 @@ class KeyTrainer(QWidget):
         self.step = 0
         # Reset count in 
         self.countedIn = False
+        self.is_paused = False
+        
+    def pause(self):
+        """
+        Pause loop but do not reset anything.
+        """
+        logging.debug("Pausing loop")
+        self.is_paused = True
+        
+        self.timer.stop()
+        self.button_start.setEnabled(True)
+        self.button_pause.setEnabled(False)
         
     def start(self):
         """
         Start the training loop. This will disable all buttons and enable the stop button.
         """
-        logging.info("Starting training")
-        self.cycleKeys = itertools.cycle(self.theseKeys)
-        self.current_key_displayed = next(self.cycleKeys)
-        self.next_key_displayed = next(self.cycleKeys)
-        hold_time = (60000/self.bpm)
+        if not self.is_paused:
+            logging.info("Starting training")
+            self.cycleKeys = itertools.cycle(self.theseKeys)
+            self.current_key_displayed = next(self.cycleKeys)
+            self.next_key_displayed = next(self.cycleKeys)
+
+        hold_time = (60000/self.bpm)    
         logging.debug("BPM: %s -> Hold time: %s ms", self.bpm, hold_time)
         self.timer.start(hold_time)
 
@@ -329,6 +351,7 @@ class KeyTrainer(QWidget):
         self.count_in_dialog.setEnabled(flag)
         # Buttons
         self.button_start.setEnabled(flag)
+        self.button_pause.setEnabled(not flag)
         self.button_stop.setEnabled(not flag)
         self.button_set_signature.setEnabled(flag)
         self.button_set_bpm.setEnabled(flag)
