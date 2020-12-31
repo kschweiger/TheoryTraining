@@ -5,8 +5,9 @@ import logging
 import itertools
 import random
 
-from PySide6.QtWidgets import QWidget, QApplication, QPushButton, QVBoxLayout,QHBoxLayout, QGridLayout, QLineEdit, QLabel, QComboBox
-from PySide6.QtCore import QTimer, Qt
+from PySide2.QtWidgets import QWidget, QApplication, QPushButton, QVBoxLayout,QHBoxLayout, QGridLayout, QLineEdit, QLabel, QComboBox
+from PySide2.QtCore import QTimer, Qt
+from PySide2.QtMultimedia import QSound
 
 class KeyTrainer(QWidget):
 
@@ -25,6 +26,11 @@ class KeyTrainer(QWidget):
         
         self.step = 0
 
+        self.sounds = {
+            "Primary" : QSound("data/primary_ping.wav"),
+            "Secondary" : QSound("data/secondary_ping.wav"),
+        }
+        
         self.current_key_displayed = ""
         self.next_key_displayed = ""
         
@@ -280,9 +286,16 @@ class KeyTrainer(QWidget):
                 logging.debug("Next key: %s", self.next_key_displayed)
                 self.current_key.setText(currentKey)
                 self.next_key.setText("")
-
+                
             if self.step == self.sig - self.steps_show_next_key:
                 self.next_key.setText(self.next_key_displayed)
+
+            # Sounds:
+            if self.step == 0:
+                self.sounds["Primary"].play()
+            else:
+                self.sounds["Secondary"].play()
+                            
                 
             self.step += 1
             # Update the signature label
@@ -303,7 +316,8 @@ class KeyTrainer(QWidget):
                 self.step += 1
                 # Update the signature label
                 self.current_sig_step_label.setText("%s / %s"%(self.step, self.bars_count_in*self.sig))
-
+            #Sound
+            self.sounds["Secondary"].play()
             
     def change_button_state(self, flag):
         """
