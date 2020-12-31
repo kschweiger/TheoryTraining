@@ -126,51 +126,72 @@ class KeyTrainer(QWidget):
             """
         )
 
-        grid_layout = QGridLayout()
+        self.grid_layout = QGridLayout()
         
         #########################################################
-        grid_layout.addWidget(self.bpm_label, 1, 0)
-        grid_layout.addWidget(self.signature_label, 1, 2)
-        grid_layout.addWidget(self.count_in_label, 1, 4)
+        self.grid_layout.addWidget(self.bpm_label, 1, 0)
+        self.grid_layout.addWidget(self.signature_label, 1, 2)
+        self.grid_layout.addWidget(self.count_in_label, 1, 4)
         
         #########################################################
-        grid_layout.addWidget(self.bpm_dialog, 2, 0)
-        grid_layout.addWidget(self.button_set_bpm, 2, 1)
+        self.grid_layout.addWidget(self.bpm_dialog, 2, 0)
+        self.grid_layout.addWidget(self.button_set_bpm, 2, 1)
 
-        grid_layout.addWidget(self.signature_upper_dialog, 2, 2)
-        grid_layout.addWidget(self.button_set_signature, 2, 3)
+        self.grid_layout.addWidget(self.signature_upper_dialog, 2, 2)
+        self.grid_layout.addWidget(self.button_set_signature, 2, 3)
 
-        grid_layout.addWidget(self.count_in_dialog, 2, 4)
-        grid_layout.addWidget(self.button_count_in_bars, 2, 5)
-
-        #########################################################
-        grid_layout.addWidget(self.order_type_label, 3, 0)
-        grid_layout.addWidget(self.start_key_label, 3, 2)
-        grid_layout.addWidget(self.show_next_key_label, 3, 4)
+        self.grid_layout.addWidget(self.count_in_dialog, 2, 4)
+        self.grid_layout.addWidget(self.button_count_in_bars, 2, 5)
 
         #########################################################
-        grid_layout.addWidget(self.order_type_dropdown, 4, 0)
-        grid_layout.addWidget(self.start_key_dropdown, 4, 2)
-        grid_layout.addWidget(self.show_next_key_dropdown, 4, 4)
+        self.grid_layout.addWidget(self.order_type_label, 3, 0)
+        self.grid_layout.addWidget(self.start_key_label, 3, 2)
+        self.grid_layout.addWidget(self.show_next_key_label, 3, 4)
 
         #########################################################
-        grid_layout.addWidget(self.current_key,
+        self.grid_layout.addWidget(self.order_type_dropdown, 4, 0)
+        self.grid_layout.addWidget(self.start_key_dropdown, 4, 2)
+        self.grid_layout.addWidget(self.show_next_key_dropdown, 4, 4)
+
+        #########################################################
+        self.grid_layout.addWidget(self.current_key,
                               5, 0, 1, 2,
                               alignment=(Qt.AlignBottom | Qt.AlignCenter))
-        grid_layout.addWidget(self.next_key,
-                              5, 2, 1, 1,
+        self.grid_layout.addWidget(self.next_key,
+                              5, 2, 1, 2,
                               alignment=(Qt.AlignBottom | Qt.AlignCenter))
-        grid_layout.addWidget(self.current_sig_step_label,
-                              5, 3, 1, 3,
+        self.grid_layout.addWidget(self.current_sig_step_label,
+                              5, 4, 1, 2,
                               alignment=Qt.AlignCenter)
         
         #########################################################
-        grid_layout.addWidget(self.button_start, 6, 0, 1, 2)
-        grid_layout.addWidget(self.button_pause, 6, 2, 1, 2)
-        grid_layout.addWidget(self.button_stop, 6, 4, 1, 2)        
+        self.grid_layout.addWidget(self.button_start, 6, 0, 1, 2)
+        self.grid_layout.addWidget(self.button_pause, 6, 2, 1, 2)
+        self.grid_layout.addWidget(self.button_stop, 6, 4, 1, 2)
+
+
+        self.grid_layout.setColumnMinimumWidth(0,140)
+        self.grid_layout.setColumnStretch(0,1)
         
-        #grid_layout.addWidget()
-        self.setLayout(grid_layout)
+        self.grid_layout.setColumnMinimumWidth(1,140)
+        self.grid_layout.setColumnStretch(1,1)
+
+        self.grid_layout.setColumnMinimumWidth(2,140)
+        self.grid_layout.setColumnStretch(2,1)
+
+        self.grid_layout.setColumnMinimumWidth(3,140)
+        self.grid_layout.setColumnStretch(3,1)
+
+        self.grid_layout.setColumnMinimumWidth(4,140)
+        self.grid_layout.setColumnStretch(4,1)
+
+        self.grid_layout.setColumnMinimumWidth(5,140)
+        self.grid_layout.setColumnStretch(5,1)
+
+        
+
+        #self.grid_layout.addWidget()
+        self.setLayout(self.grid_layout)
         
     def setTempo(self):
         """
@@ -368,5 +389,17 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     trainer = KeyTrainer()
     trainer.show()
+
+            
+    # TEMP Some debugging and testing code 
+    print("0", trainer.grid_layout.columnMinimumWidth(0), trainer.grid_layout.columnStretch(0))
+    print("1", trainer.grid_layout.columnMinimumWidth(1), trainer.grid_layout.columnStretch(1))
+    print("2", trainer.grid_layout.columnMinimumWidth(2), trainer.grid_layout.columnStretch(2))
+    print("3", trainer.grid_layout.columnMinimumWidth(3), trainer.grid_layout.columnStretch(3))
+    print("4", trainer.grid_layout.columnMinimumWidth(4), trainer.grid_layout.columnStretch(4))
+    print("5", trainer.grid_layout.columnMinimumWidth(5), trainer.grid_layout.columnStretch(5))
+    
+
+    
     # Run the main Qt loop
     sys.exit(app.exec_())
