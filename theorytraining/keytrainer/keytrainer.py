@@ -25,6 +25,9 @@ class KeyTrainer(QWidget):
         
         self.step = 0
 
+        self.current_key_displayed = ""
+        self.next_key_displayed = ""
+        
         self.setWindowTitle(self.title)
         
         self.current_key_text = "C"
@@ -41,6 +44,7 @@ class KeyTrainer(QWidget):
 
         self.order_type_label = QLabel('Key order')
         self.start_key_label = QLabel('Starting Key')
+        self.show_next_key_label = QLabel('Show next key for')
 
         
         self.bpm_dialog = QLineEdit("100")
@@ -74,6 +78,10 @@ class KeyTrainer(QWidget):
         self.start_key_dropdown = QComboBox()
         self.start_key_dropdown.addItems(self.keys + ["Random"])
         self.start_key_dropdown.currentTextChanged.connect( self.set_start_key )
+
+        self.show_next_key_dropdown = QComboBox()
+        self.show_next_key_dropdown.addItems(["Half bar", "Full bar","1 Step","Off"])
+        self.show_next_key_dropdown.currentIndexChanged.connect( self.set_next_key )
         
         self.timer = QTimer()
         self.timer.timeout.connect(self.update)
@@ -81,10 +89,15 @@ class KeyTrainer(QWidget):
         self.current_key = QLabel(self.current_key_text)
         self.current_key.setObjectName('CurrentKey')
 
+        self.next_key = QLabel("D")
+        self.next_key.setObjectName('NextKey')
+
+        
         self.current_sig_step_label = QLabel(self.current_sig_step)
         self.current_sig_step_label.setObjectName('Signature')
 
         self.set_order(0)
+        self.set_next_key(0)
         self.set_start_key("C")
         
         self.init_grid_layout()
@@ -93,6 +106,7 @@ class KeyTrainer(QWidget):
         self.setStyleSheet(
             """
             QLabel#CurrentKey { font-size: 80px }
+            QLabel#NextKey { font-size: 50px; margin-bottom : 5px; color : #FF4C4C }
             QLabel#Signature  { font-size: 50px }
             QPushButton#StartButton { font-size: 20px }
             QPushButton#StopButton { font-size: 20px }
@@ -119,15 +133,20 @@ class KeyTrainer(QWidget):
         #########################################################
         grid_layout.addWidget(self.order_type_label, 3, 0)
         grid_layout.addWidget(self.start_key_label, 3, 2)
+        grid_layout.addWidget(self.show_next_key_label, 3, 4)
 
         #########################################################
         grid_layout.addWidget(self.order_type_dropdown, 4, 0)
         grid_layout.addWidget(self.start_key_dropdown, 4, 2)
+        grid_layout.addWidget(self.show_next_key_dropdown, 4, 4)
 
         #########################################################
         grid_layout.addWidget(self.current_key,
-                              5, 0, 1, 3,
-                              alignment=Qt.AlignCenter)
+                              5, 0, 1, 2,
+                              alignment=(Qt.AlignBottom | Qt.AlignCenter))
+        grid_layout.addWidget(self.next_key,
+                              5, 2, 1, 1,
+                              alignment=(Qt.AlignBottom | Qt.AlignCenter))
         grid_layout.addWidget(self.current_sig_step_label,
                               5, 3, 1, 3,
                               alignment=Qt.AlignCenter)
@@ -193,6 +212,25 @@ class KeyTrainer(QWidget):
             raise KeyError("%s not in self.theseKeys list. This should not happen")
         indexKey = self.theseKeys.index(startKey)
         self.theseKeys = self.theseKeys[indexKey::]+self.theseKeys[0:indexKey]
+
+    def set_next_key(self, i):
+        """
+        Set if and how long the next key will be shown
+        """
+        # Half bar
+        if i == 0:
+            self.steps_show_next_key = self.sig / 2
+        # Full bar
+        elif i == 1:
+            self.steps_show_next_key = self.sig 
+        # 1 step
+        elif i == 2:
+            self.steps_show_next_key = 1 
+        # Off
+        else:
+            self.steps_show_next_key = 0
+
+        logging.debug("The next key will be shown for %s steps", self.steps_show_next_key)
             
     def stop(self):
         """
@@ -214,6 +252,8 @@ class KeyTrainer(QWidget):
         """
         logging.info("Starting training")
         self.cycleKeys = itertools.cycle(self.theseKeys)
+        self.current_key_displayed = next(self.cycleKeys)
+        self.next_key_displayed = next(self.cycleKeys)
         hold_time = (60000/self.bpm)
         logging.debug("BPM: %s -> Hold time: %s ms", self.bpm, hold_time)
         self.timer.start(hold_time)
@@ -234,10 +274,16 @@ class KeyTrainer(QWidget):
 
             #Update the Key label
             if self.step == 0:
-                currentKey = next(self.cycleKeys)
+                currentKey = self.next_key_displayed
+                self.next_key_displayed = next(self.cycleKeys)
                 logging.debug("Current key: %s", currentKey)
+                logging.debug("Next key: %s", self.next_key_displayed)
                 self.current_key.setText(currentKey)
+                self.next_key.setText("")
 
+            if self.step == self.sig - self.steps_show_next_key:
+                self.next_key.setText(self.next_key_displayed)
+                
             self.step += 1
             # Update the signature label
             self.current_sig_step_label.setText("%s / %s"%(self.step, self.sig))
@@ -253,6 +299,7 @@ class KeyTrainer(QWidget):
             else:
                 if self.step == 0:
                     self.current_key.setText("Count in")
+                    self.next_key.setText(self.current_key_displayed)
                 self.step += 1
                 # Update the signature label
                 self.current_sig_step_label.setText("%s / %s"%(self.step, self.bars_count_in*self.sig))
@@ -275,6 +322,7 @@ class KeyTrainer(QWidget):
         # Dropdowns
         self.order_type_dropdown.setEnabled(flag)
         self.start_key_dropdown.setEnabled(flag)
+        self.show_next_key_dropdown.setEnabled(flag)
         
 if __name__ == "__main__":
     logging.basicConfig( encoding='utf-8', level=logging.DEBUG)
