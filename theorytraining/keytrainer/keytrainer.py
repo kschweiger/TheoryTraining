@@ -10,8 +10,11 @@ from PySide2.QtMultimedia import QSound
 
 
 class KeyTrainer(QWidget):
-
-    def __init__(self, parent=None):
+    """
+    Application intendent to train finding certain keys on the fretboard.
+    """
+    
+    def __init__(self, parent=None, setSounds=None):
         super(KeyTrainer, self).__init__(parent)
         
         self.title = "Key Trainer"
@@ -26,10 +29,24 @@ class KeyTrainer(QWidget):
         self.is_paused = False
         
         self.step = 0
-        
+
+        if setSounds is None:
+            path_primary = "data/primary_ping.wav"
+            path_secondary =  "data/secondary_ping.wav"
+        else:
+            logging.info("Got external redefinition of sounds : %s", setSounds)
+            if not isinstance(setSounds, list) and len(setSounds) == 2:
+                logging.error("SetSounds is : %s", setSounds)
+                logging.error("Should be type list (is: %s) and have exactly 2 (but has %s) elements pointing to sound files",
+                              type(setSounds), len(setSounds))
+                raise RuntimeError("Could not process passed setSounds")
+            else:
+                path_primary = setSounds[0]
+                path_secondary = setSounds[1]
+                
         self.sounds = {
-            "Primary" : QSound("data/primary_ping.wav"),
-            "Secondary" : QSound("data/secondary_ping.wav"),
+            "Primary" : QSound(path_primary),
+            "Secondary" : QSound(path_secondary),
         }
         
         self.current_key_displayed = ""

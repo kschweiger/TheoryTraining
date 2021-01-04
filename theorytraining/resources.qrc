@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+     <qresource prefix="sounds">
+     		<file alias="primary_ping.wav">data/primary_ping.wav</file>
+     		<file alias="secondary_ping.wav">data/secondary_ping.wav</file>
+    </qresource>
+</RCC>
